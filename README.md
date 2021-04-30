@@ -44,7 +44,7 @@ External services in use:
 
 - https://ipapi.co/
 - https://reallyfreegeoip.org/
-- https://get.geojs.io/
+- https://www.geojs.io/
 
 
 ## License
