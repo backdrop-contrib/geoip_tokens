@@ -2,3 +2,5 @@ name = GeoIP Tokens
 description = Provides tokens with geolocation information.
 backdrop = 1.x
 type = module
+
+configure = admin/config/system/geoip-settings
