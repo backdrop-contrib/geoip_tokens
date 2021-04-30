@@ -178,7 +178,7 @@ function geoip_tokens_providers() {
  */
 function geoip_tokens_cron() {
   // @todo do not hardcode maxage.
-  $timestamp = time() - (86400 * 14);
+  $timestamp = time() - (86400 * 30);
   db_delete('geoip_tokens_cache')
     ->condition('created', $timestamp, '<')
     ->execute();
