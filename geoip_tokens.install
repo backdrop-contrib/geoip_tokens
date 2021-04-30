@@ -1,0 +1,72 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for this module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function geoip_tokens_schema() {
+  $schema['geoip_tokens_cache'] = array(
+    'description' => 'The base table for caching results for geoip_tokens.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The primary identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'anon_ip' => array(
+        'description' => 'Anonymized IP of this record.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'country_code' => array(
+        'description' => 'Country code of this record, usually two letters.',
+        'type' => 'varchar',
+        'length' => 8,
+        'not null' => FALSE,
+      ),
+      'latitude' => array(
+        'description' => 'Latitude coordinates',
+        'type' => 'varchar',
+        'length' => 36,
+        'not null' => TRUE,
+      ),
+      'longitude' => array(
+        'description' => 'Longitude coordinates',
+        'type' => 'varchar',
+        'length' => 36,
+        'not null' => TRUE,
+      ),
+      'timezone' => array(
+        'description' => 'Timezone for these coordinates',
+        'type' => 'varchar',
+        'length' => 36,
+        'not null' => FALSE,
+      ),
+      'provider' => array(
+        'description' => 'The provider this record has been fetched from',
+        'type' => 'varchar',
+        'length' => 80,
+        'not null' => FALSE,
+      ),
+      'created' => array(
+        'description' => 'Unix timestamp when this record was created',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('id'),
+    'indexes' => array(
+      'anon_ip' => array('anon_ip'),
+      'created' => array('created'),
+    ),
+  );
+
+  return $schema;
+}

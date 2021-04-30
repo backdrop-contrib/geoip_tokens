@@ -1,0 +1,185 @@
+<?php
+/**
+ * @file
+ * GeoIP Tokens module main code.
+ */
+
+/**
+ * Implements hook_menu().
+ *
+ * @todo Admin page to en/disable services?
+ */
+function geoip_tokens_menu() {
+  $items['geoip-tokens/test'] = array(
+    'title' => 'Test geoloc',
+    'page callback' => 'geoip_tokens_testpage',
+    'access callback' => TRUE,
+  );
+  return $items;
+}
+
+/**
+ * Quick placeholder page for testing.
+ */
+function geoip_tokens_testpage() {
+  $tokens = '[geoip_tokens:country_code]: [geoip_tokens:latitude], [geoip_tokens:longitude], [geoip_tokens:timezone]';
+  $foo = token_replace($tokens);
+  return '<p>This is a demo for token replacements ' . $foo . '</p>';
+}
+
+/**
+ * Returns information either from cache or from external request.
+ *
+ * @param string $type
+ *   The requested type of information, defaults to "all".
+ *   Available types: 'all', 'latlon'.
+ *
+ * @return array|bool
+ *   Associative array of information, FALSE if no result retrieved.
+ */
+function geoip_tokens_get_geoip_info($type = 'all') {
+  $ip = ip_address();
+  $anon_ip = geoip_tokens_anonymize_ip($ip);
+  $cache_hit = db_query('SELECT * FROM {geoip_tokens_cache} WHERE anon_ip = :anon_ip', array(
+    ':anon_ip' => $anon_ip,
+  ))->fetchAssoc();
+
+  // If not found in local cache, do an external request.
+  if (!$cache_hit) {
+    $result = geoip_tokens_retrieve_external($anon_ip);
+    if (!$result) {
+      return FALSE;
+    }
+  }
+  else {
+    $result = $cache_hit;
+  }
+
+  // Filter to return the requested data.
+  if ($type == 'latlon') {
+    $keys = array('latitude', 'longitude');
+  }
+  else {
+    $keys = array('country_code', 'latitude', 'longitude', 'timezone');
+  }
+  $filtered = array_filter($result, function ($key) use ($keys) {
+    return in_array($key, $keys);
+  }, ARRAY_FILTER_USE_KEY);
+
+  return $filtered;
+}
+
+/**
+ * Strips off the last octet to comply to privacy requirements.
+ *
+ * @param string $ip
+ *   Ipv4 or ipv6 address (required).
+ *
+ * @return string
+ *   Anonymized IP.
+ */
+function geoip_tokens_anonymize_ip($ip) {
+  // @todo Use constants for netmasks?
+  $ipv4_netmask = '255.255.255.0';
+  $ipv6_netmask = 'ffff:ffff:ffff:ffff:0000:0000:0000:0000';
+  if (strpos($ip, ':') === FALSE) {
+    return inet_ntop(inet_pton($ip) & inet_pton($ipv4_netmask));
+  }
+  else {
+    return inet_ntop(inet_pton($ip) & inet_pton($ipv6_netmask));
+  }
+}
+
+/**
+ * Does external request to a provider, saves result in database.
+ *
+ * @param string $ip
+ *   Ip address (anonymized) to request information for.
+ *
+ * @return array|bool
+ *   Associative array of retrieved values, FALSE on error.
+ */
+function geoip_tokens_retrieve_external($ip) {
+  // @todo Use a static cache?
+  $providers = geoip_tokens_providers();
+  $current_provider = array_rand($providers);
+  $url = str_replace('__IP__', $ip, $providers[$current_provider]['urlpattern']);
+  $data = FALSE;
+
+  $response = backdrop_http_request($url);
+  // Make sure we catch errors and inform the admin.
+  $response_code = $response->code;
+  if (isset($response->error)) {
+    watchdog('geoip_tokens', 'HTTP request to @url failed with error: @error.', array(
+      '@url' => $url,
+      '@error' => $response->error,
+    ));
+  }
+  // @todo What about 301/302?
+  elseif ($response_code == '200' && isset($response->data)) {
+    $remote_data = json_decode($response->data, TRUE);
+    $field_defs = $providers[$current_provider]['field_names'];
+    $data['provider'] = $current_provider;
+    $data['anon_ip'] = $ip;
+    $data['created'] = REQUEST_TIME;
+
+    // Field name replacements according to provider definition.
+    foreach ($field_defs as $name => $remote_name) {
+      $data[$name] = $remote_data[$remote_name];
+    }
+    // Cache result locally.
+    db_insert('geoip_tokens_cache')->fields($data)->execute();
+  }
+
+  return $data;
+}
+
+/**
+ * Returns a list of all available api providers.
+ */
+function geoip_tokens_providers() {
+  $providers = array(
+    'ipapi.co' => array(
+      'urlpattern' => 'https://ipapi.co/__IP__/json/',
+      'field_names' => array(
+        'country_code' => 'country_code',
+        'latitude' => 'latitude',
+        'longitude' => 'longitude',
+        'timezone' => 'timezone',
+      ),
+    ),
+    'reallyfreegeoip.org' => array(
+      'urlpattern' => 'https://reallyfreegeoip.org/json/__IP__',
+      'field_names' => array(
+        'country_code' => 'country_code',
+        'latitude' => 'latitude',
+        'longitude' => 'longitude',
+        'timezone' => 'time_zone',
+      ),
+    ),
+    'get.geojs.io' => array(
+      'urlpattern' => 'https://get.geojs.io/v1/ip/geo/__IP__.json',
+      'field_names' => array(
+        'country_code' => 'country_code',
+        'latitude' => 'latitude',
+        'longitude' => 'longitude',
+        'timezone' => 'timezone',
+      ),
+    ),
+  );
+  // @todo module_implements? How to create the admin page then?
+  return $providers;
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * Remove old entries from the database as they might be outdated.
+ */
+function geoip_tokens_cron() {
+  // @todo do not hardcode maxage.
+  $timestamp = time() - (86400 * 14);
+  db_delete('geoip_tokens_cache')
+    ->condition('created', $timestamp, '<')
+    ->execute();
+}
