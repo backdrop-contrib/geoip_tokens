@@ -8,14 +8,14 @@ IP addresses.
 - Longitude `[geoip_tokens:longitude]`
 - Timezone name `[geoip_tokens:timezone]`
 
-The information is retrieved from external services, the IP address of
-visitors gets anonymized to comply GPDR.
+The information is retrieved from external services, the IP addresses get 
+anonymized to comply GPDR.
 
-In order to do this, your Backdrop site must be able to do external
-requests.
+To make use of this module, your Backdrop site must be able to do external
+requests - that's usually the case.
 
-The services (see credits section below) get randomly queried, the result for
-the anonymized IP gets cached in a local database for a while, to prevent too
+The services (see credits section below) get randomly queried, the results for
+the anonymized IPs get cached in a local database for a while, to prevent too
 many requests.
 
 ### Precision of results
