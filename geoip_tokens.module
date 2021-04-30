@@ -128,7 +128,20 @@ function geoip_tokens_anonymize_ip($ip) {
  */
 function geoip_tokens_retrieve_external($ip) {
   // @todo Use a static cache?
-  $providers = geoip_tokens_providers();
+  $allproviders = geoip_tokens_providers();
+
+  $config = config_get('geoip_tokens.settings', 'providers');
+  $providers = array();
+  // Filter out disabled providers.
+  foreach ($allproviders as $name => $settings) {
+    if (!$config[$name]) {
+      continue;
+    }
+    else {
+      $providers[$name] = $settings;
+    }
+  }
+
   $current_provider = array_rand($providers);
   $url = str_replace('__IP__', $ip, $providers[$current_provider]['urlpattern']);
   $data = FALSE;
