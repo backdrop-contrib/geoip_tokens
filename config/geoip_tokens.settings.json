@@ -1,0 +1,9 @@
+{
+    "_config_name": "geoip_tokens.settings",
+    "cache_days": "30",
+    "providers": {
+        "ipapi.co": "ipapi.co",
+        "reallyfreegeoip.org": "reallyfreegeoip.org",
+        "get.geojs.io": "get.geojs.io"
+    }
+}

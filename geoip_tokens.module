@@ -10,21 +10,48 @@
  * @todo Admin page to en/disable services?
  */
 function geoip_tokens_menu() {
-  $items['geoip-tokens/test'] = array(
-    'title' => 'Test GeoIP Tokens',
-    'page callback' => 'geoip_tokens_testpage',
-    'access callback' => TRUE,
+  $items['admin/config/system/geoip-settings'] = array(
+    'title' => 'GeoIP Tokens',
+    'page callback' => 'backdrop_get_form',
+    'page arguments' => array('geoip_tokens_admin_settings_form'),
+    'access arguments' => array('administer site configuration'),
   );
   return $items;
 }
 
 /**
- * Quick placeholder page for testing.
+ * Page callback for settings form.
  */
-function geoip_tokens_testpage() {
-  $tokens = '[geoip_tokens:country_code]: [geoip_tokens:latitude], [geoip_tokens:longitude], [geoip_tokens:timezone]';
-  $foo = token_replace($tokens);
-  return '<p>This is a demo for token replacements ' . $foo . '</p>';
+function geoip_tokens_admin_settings_form($form, &$form_state) {
+  $config = config('geoip_tokens.settings');
+  $form['#config'] = 'geoip_tokens.settings';
+
+  $tokens = '[geoip_tokens:country_code], [geoip_tokens:latitude], [geoip_tokens:longitude], [geoip_tokens:timezone]';
+  $demo = '<p>' . token_replace($tokens) . '</p>';
+  $form['demo'] = array(
+    '#type' => 'markup',
+    '#markup' => t('Demo values for your IP:') . $demo,
+  );
+  $form['cache_days'] = array(
+    '#type' => 'number',
+    '#title' => t('Number of days to keep the cached results'),
+    '#description' => t('Caching results locally saves external requests, but after some time they might get outdated.'),
+    '#min' => 3,
+    '#max' => 60,
+    '#default_value' => $config->get('cache_days'),
+  );
+  $available = geoip_tokens_providers();
+  $options = backdrop_map_assoc(array_keys($available));
+  // Checkboxes are a bit odd regarding saved values, but handy.
+  $form['providers'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Enabled providers'),
+    '#description' => t('Uncheck to not use a provider from this list.'),
+    '#required' => TRUE,
+    '#options' => $options,
+    '#default_value' => $config->get('providers'),
+  );
+  return system_settings_form($form);
 }
 
 /**
@@ -177,9 +204,23 @@ function geoip_tokens_providers() {
  * Remove old entries from the database as they might be outdated.
  */
 function geoip_tokens_cron() {
-  // @todo do not hardcode maxage.
-  $timestamp = time() - (86400 * 30);
+  $cache_days = config_get('geoip_tokens.settings', 'cache_days');
+  if (!isset($cache_days)) {
+    $cache_days = 30;
+  }
+  $timestamp = time() - (86400 * $cache_days);
   db_delete('geoip_tokens_cache')
     ->condition('created', $timestamp, '<')
     ->execute();
+}
+
+/**
+ * Implements hook_config_info().
+ */
+function geoip_tokens_config_info() {
+  $prefixes['geoip_tokens.settings'] = array(
+    'label' => t('GeoIP Tokens Settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
 }
