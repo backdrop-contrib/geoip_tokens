@@ -11,7 +11,7 @@
  */
 function geoip_tokens_menu() {
   $items['geoip-tokens/test'] = array(
-    'title' => 'Test geoloc',
+    'title' => 'Test GeoIP Tokens',
     'page callback' => 'geoip_tokens_testpage',
     'access callback' => TRUE,
   );
