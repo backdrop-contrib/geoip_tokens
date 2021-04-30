@@ -30,8 +30,7 @@ Typical use-cases are sites that provide services that need some infos about
 the visitor's or user's position.
 
 For example, to center a map, to redirect to specific pages for different 
-countries or to a different language version of a page. Or to display dates in 
-the proper timezone.
+countries or to display dates in the proper timezone.
 
 ### When _not_ to use this module
 
