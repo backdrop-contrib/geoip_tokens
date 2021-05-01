@@ -16,7 +16,50 @@ function geoip_tokens_menu() {
     'page arguments' => array('geoip_tokens_admin_settings_form'),
     'access arguments' => array('administer site configuration'),
   );
+  $items['geoip-tokens/ajax/%'] = array(
+    'title' => 'GeoIP Tokens',
+    'delivery callback' => 'geoip_tokens_deliver_ajax',
+    'access callback' => TRUE,
+  );
   return $items;
+}
+
+/**
+ * Ajax callback.
+ *
+ * We silently exit in case our criteria are not met because this page is
+ * publicly accessible.
+ */
+function geoip_tokens_deliver_ajax() {
+  if (empty($_POST) || !isset($_POST['geoipTokenRequestToken'])) {
+    backdrop_exit();
+  }
+  // @todo Something with state_get()? A CSRF-token-like thing to actually
+  // verify the value from geoipTokenRequestToken.
+
+  $args = arg();
+  if (count($args) == 3) {
+    switch($args[2]) {
+      case 'latlon':
+        $result = geoip_tokens_get_geoip_info('latlon');
+        break;
+
+      case 'tzone':
+        $result = geoip_tokens_get_geoip_info('timezone');
+        break;
+
+      case 'ccode':
+        $result = geoip_tokens_get_geoip_info('country_code');
+        break;
+
+      default:
+        backdrop_exit();
+    }
+  }
+  else {
+    backdrop_exit();
+  }
+  backdrop_json_deliver($result);
 }
 
 /**
@@ -59,7 +102,7 @@ function geoip_tokens_admin_settings_form($form, &$form_state) {
  *
  * @param string $type
  *   The requested type of information, defaults to "all".
- *   Available types: 'all', 'latlon'.
+ *   Available types: 'all', 'latlon', 'country_code', 'timezone'.
  *
  * @return array|bool
  *   Associative array of information, FALSE if no result retrieved.
@@ -85,6 +128,9 @@ function geoip_tokens_get_geoip_info($type = 'all') {
   // Filter to return the requested data.
   if ($type == 'latlon') {
     $keys = array('latitude', 'longitude');
+  }
+  elseif ($type == 'country_code' || $type == 'timezone') {
+    $keys = array($type);
   }
   else {
     $keys = array('country_code', 'latitude', 'longitude', 'timezone');
