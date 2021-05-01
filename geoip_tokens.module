@@ -34,12 +34,16 @@ function geoip_tokens_deliver_ajax() {
   if (empty($_POST) || !isset($_POST['geoipTokenRequestToken'])) {
     backdrop_exit();
   }
-  // @todo Something with state_get()? A CSRF-token-like thing to actually
-  // verify the value from geoipTokenRequestToken.
+  // This token is not as secure as a per request generated one, but works for
+  // anonymous (without session) and is uniq to this site.
+  $valid_token = state_get('geoip_tokens_request_token');
+  if ($_POST['geoipTokenRequestToken'] != $valid_token) {
+    backdrop_exit();
+  }
 
   $args = arg();
   if (count($args) == 3) {
-    switch($args[2]) {
+    switch ($args[2]) {
       case 'latlon':
         $result = geoip_tokens_get_geoip_info('latlon');
         break;
@@ -261,6 +265,7 @@ function geoip_tokens_providers() {
  * Implements hook_cron().
  *
  * Remove old entries from the database as they might be outdated.
+ * Periodically refresh the request token for ajax.
  */
 function geoip_tokens_cron() {
   $cache_days = config_get('geoip_tokens.settings', 'cache_days');
@@ -271,6 +276,15 @@ function geoip_tokens_cron() {
   db_delete('geoip_tokens_cache')
     ->condition('created', $timestamp, '<')
     ->execute();
+
+  $last_refreshed = state_get('geoip_tokens_request_token_refreshed');
+  if (!isset($last_refreshed) || $last_refreshed < REQUEST_TIME - (86400 * 14)) {
+    $new_token = backdrop_random_key();
+    state_set('geoip_tokens_request_token', $new_token);
+    state_set('geoip_tokens_request_token_refreshed', REQUEST_TIME);
+    // @todo Verify that this is necessary on cron runs.
+    cache_flush('page');
+  }
 }
 
 /**

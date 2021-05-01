@@ -70,3 +70,20 @@ function geoip_tokens_schema() {
 
   return $schema;
 }
+
+/**
+ * Implements hook_install().
+ */
+function geoip_tokens_install() {
+  $new_token = backdrop_random_key();
+  state_set('geoip_tokens_request_token', $new_token);
+  state_set('geoip_tokens_request_token_refreshed', REQUEST_TIME);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function geoip_tokens_uninstall() {
+  state_del('geoip_tokens_request_token');
+  state_del('geoip_tokens_request_token_refreshed');
+}
