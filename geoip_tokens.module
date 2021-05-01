@@ -297,3 +297,26 @@ function geoip_tokens_config_info() {
   );
   return $prefixes;
 }
+
+/**
+ * Implements hook_library_info().
+ */
+function geoip_tokens_library_info() {
+  $path = backdrop_get_path('module', 'geoip_tokens') . '/js';
+  $libraries['geoip_tokens'] = array(
+    'title' => 'GeoIP Tokens',
+    'version' => '1.0.0',
+    'js' => array(
+      $path . '/geoip_tokens.js' => array(
+        'type' => 'file',
+      ),
+      0 => array(
+        'type' => 'setting',
+        'data' => array(
+          'geoipToken' => state_get('geoip_tokens_request_token'),
+        ),
+      ),
+    ),
+  );
+  return $libraries;
+}
