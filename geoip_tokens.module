@@ -107,8 +107,8 @@ function geoip_tokens_admin_settings_form($form, &$form_state) {
  *   The requested type of information, defaults to "all".
  *   Available types: 'all', 'latlon', 'country_code', 'timezone'.
  *
- * @return array|bool
- *   Associative array of information, FALSE if no result retrieved.
+ * @return array
+ *   Associative array of information, fallback values if no data retrieved.
  */
 function geoip_tokens_get_geoip_info($type = 'all') {
   $ip = ip_address();
