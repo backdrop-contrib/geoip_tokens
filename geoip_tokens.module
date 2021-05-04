@@ -7,7 +7,6 @@
 /**
  * Implements hook_menu().
  *
- * @todo Admin page to en/disable services?
  */
 function geoip_tokens_menu() {
   $items['admin/config/system/geoip-settings'] = array(
@@ -114,6 +113,9 @@ function geoip_tokens_admin_settings_form($form, &$form_state) {
 function geoip_tokens_get_geoip_info($type = 'all') {
   $ip = ip_address();
   $anon_ip = geoip_tokens_anonymize_ip($ip);
+  if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE) === FALSE) {
+    return _geoip_tokens_get_default_values($anon_ip, 'invalid_range');
+  }
   $cache_hit = db_query('SELECT * FROM {geoip_tokens_cache} WHERE anon_ip = :anon_ip', array(
     ':anon_ip' => $anon_ip,
   ))->fetchAssoc();
@@ -121,9 +123,6 @@ function geoip_tokens_get_geoip_info($type = 'all') {
   // If not found in local cache, do an external request.
   if (!$cache_hit) {
     $result = geoip_tokens_retrieve_external($anon_ip);
-    if (!$result) {
-      return FALSE;
-    }
   }
   else {
     $result = $cache_hit;
@@ -173,8 +172,8 @@ function geoip_tokens_anonymize_ip($ip) {
  * @param string $ip
  *   Ip address (anonymized) to request information for.
  *
- * @return array|bool
- *   Associative array of retrieved values, FALSE on error.
+ * @return array
+ *   Associative array of retrieved values, with default values on error.
  */
 function geoip_tokens_retrieve_external($ip) {
   // @todo Use a static cache?
@@ -194,7 +193,7 @@ function geoip_tokens_retrieve_external($ip) {
 
   $current_provider = array_rand($providers);
   $url = str_replace('__IP__', $ip, $providers[$current_provider]['urlpattern']);
-  $data = FALSE;
+  $data = array();
 
   $response = backdrop_http_request($url);
   // Make sure we catch errors and inform the admin.
@@ -204,24 +203,56 @@ function geoip_tokens_retrieve_external($ip) {
       '@url' => $url,
       '@error' => $response->error,
     ));
+    return _geoip_tokens_get_default_values($ip, $current_provider);
   }
   // @todo What about 301/302?
   elseif ($response_code == '200' && isset($response->data)) {
     $remote_data = json_decode($response->data, TRUE);
-    $field_defs = $providers[$current_provider]['field_names'];
-    $data['provider'] = $current_provider;
-    $data['anon_ip'] = $ip;
-    $data['created'] = REQUEST_TIME;
 
     // Field name replacements according to provider definition.
+    $field_defs = $providers[$current_provider]['field_names'];
     foreach ($field_defs as $name => $remote_name) {
+      // Services return very different values/structures on failure.
+      if (!isset($remote_data[$remote_name])) {
+        continue;
+      }
+      if ($name == 'latitude' || $name == 'longitude') {
+        // Services might return weird values like "nil" for no record.
+        if (!is_numeric($remote_data[$remote_name])) {
+          continue;
+        }
+      }
       $data[$name] = $remote_data[$remote_name];
     }
+    $data += _geoip_tokens_get_default_values($ip, $current_provider);
     // Cache result locally.
     db_insert('geoip_tokens_cache')->fields($data)->execute();
   }
 
   return $data;
+}
+
+/**
+ * Helper function.
+ *
+ * @param string $ip
+ *   IP address, usually anonymized.
+ * @param string $provider_name
+ *   Name of current provider, or any string actually.
+ *
+ * @return array
+ */
+function _geoip_tokens_get_default_values($ip, $provider_name) {
+  $defaults = array(
+    'anon_ip' => $ip,
+    'country_code' => '',
+    'latitude' => 0,
+    'longitude' => 0,
+    'timezone' => '',
+    'provider' => $provider_name,
+    'created' => REQUEST_TIME,
+  );
+  return $defaults;
 }
 
 /**

@@ -20,7 +20,7 @@ function geoip_tokens_schema() {
       'anon_ip' => array(
         'description' => 'Anonymized IP of this record.',
         'type' => 'varchar',
-        'length' => 128,
+        'length' => 96,
         'not null' => TRUE,
         'default' => '',
       ),
