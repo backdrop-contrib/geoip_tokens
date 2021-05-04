@@ -114,6 +114,7 @@ function geoip_tokens_get_geoip_info($type = 'all') {
   $ip = ip_address();
   $anon_ip = geoip_tokens_anonymize_ip($ip);
   if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE) === FALSE) {
+    // @todo Not optimal as it ignores the requested type.
     return _geoip_tokens_get_default_values($anon_ip, 'invalid_range');
   }
   $cache_hit = db_query('SELECT * FROM {geoip_tokens_cache} WHERE anon_ip = :anon_ip', array(
