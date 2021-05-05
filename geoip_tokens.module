@@ -114,22 +114,28 @@ function geoip_tokens_get_geoip_info($type = 'all') {
   $ip = ip_address();
   $anon_ip = geoip_tokens_anonymize_ip($ip);
 
-  if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE)) {
-    $cache_hit = db_query('SELECT * FROM {geoip_tokens_cache} WHERE anon_ip = :anon_ip', array(
-      ':anon_ip' => $anon_ip,
-    ))->fetchAssoc();
+  // The external IP can never change within a request, but this function could
+  // get triggered several times by different tokens. Re-use the result.
+  static $result;
 
-    // If not found in local cache, do an external request.
-    if (!$cache_hit) {
-      $result = geoip_tokens_retrieve_external($anon_ip);
+  if (empty($result)) {
+    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE)) {
+      $cache_hit = db_query('SELECT * FROM {geoip_tokens_cache} WHERE anon_ip = :anon_ip', array(
+        ':anon_ip' => $anon_ip,
+      ))->fetchAssoc();
+
+      // If not found in local cache, do an external request.
+      if (!$cache_hit) {
+        $result = geoip_tokens_retrieve_external($anon_ip);
+      }
+      else {
+        $result = $cache_hit;
+      }
     }
     else {
-      $result = $cache_hit;
+      // Private IP ranges are not valid for geoip, fallback to default values.
+      $result = _geoip_tokens_get_default_values($anon_ip, 'invalid_range');
     }
-  }
-  else {
-    // Private IP ranges are not valid for geoip, fallback to default values.
-    $result = _geoip_tokens_get_default_values($anon_ip, 'invalid_range');
   }
 
   // Filter to return the requested data.
@@ -179,7 +185,6 @@ function geoip_tokens_anonymize_ip($ip) {
  *   Associative array of retrieved values, with default values on error.
  */
 function geoip_tokens_retrieve_external($ip) {
-  // @todo Use a static cache?
   $allproviders = geoip_tokens_providers();
 
   $config = config_get('geoip_tokens.settings', 'providers');
@@ -316,7 +321,7 @@ function geoip_tokens_cron() {
     $new_token = backdrop_random_key();
     state_set('geoip_tokens_request_token', $new_token);
     state_set('geoip_tokens_request_token_refreshed', REQUEST_TIME);
-    // @todo Verify that this is necessary on cron runs.
+    // Make sure that the new token is used for js settings.
     cache_flush('page');
   }
 }
