@@ -201,7 +201,7 @@ function geoip_tokens_retrieve_external($ip) {
 
   $current_provider = array_rand($providers);
   $url = str_replace('__IP__', $ip, $providers[$current_provider]['urlpattern']);
-  $data = array();
+  $data = _geoip_tokens_get_default_values($ip, $current_provider);
 
   $response = backdrop_http_request($url);
   // Make sure we catch errors and inform the admin.
@@ -211,7 +211,6 @@ function geoip_tokens_retrieve_external($ip) {
       '@url' => $url,
       '@error' => $response->error,
     ));
-    return _geoip_tokens_get_default_values($ip, $current_provider);
   }
   // @todo What about 301/302?
   elseif ($response_code == '200' && isset($response->data)) {
@@ -232,7 +231,7 @@ function geoip_tokens_retrieve_external($ip) {
       }
       $data[$name] = $remote_data[$remote_name];
     }
-    $data += _geoip_tokens_get_default_values($ip, $current_provider);
+
     // Cache result locally.
     db_insert('geoip_tokens_cache')->fields($data)->execute();
   }
