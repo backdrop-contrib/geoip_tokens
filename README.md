@@ -9,7 +9,7 @@ IP addresses.
 - Timezone name `[geoip_tokens:timezone]`
 
 The information is retrieved from external services, the IP addresses get 
-anonymized to comply GPDR.
+anonymized to comply with GPDR.
 
 To make use of this module, your Backdrop site must be able to do external
 requests - that's usually the case.
@@ -69,7 +69,7 @@ External services in use:
 - https://ipapi.co/
 - https://reallyfreegeoip.org/
 - https://www.geojs.io/
-
+- https://freegeoip.app/
 
 ## License
 
