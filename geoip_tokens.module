@@ -303,6 +303,24 @@ function geoip_tokens_providers() {
         'timezone' => 'time_zone',
       ),
     ),
+    'freegeoip.live' => array(
+      'urlpattern' => 'https://freegeoip.live/json/__IP__',
+      'field_names' => array(
+        'country_code' => 'country_code',
+        'latitude' => 'latitude',
+        'longitude' => 'longitude',
+        'timezone' => 'time_zone',
+      ),
+    ),
+    'geoiplookup.io' => array(
+      'urlpattern' => 'https://json.geoiplookup.io/__IP__',
+      'field_names' => array(
+        'country_code' => 'country_code',
+        'latitude' => 'latitude',
+        'longitude' => 'longitude',
+        'timezone' => 'timezone_name',
+      ),
+    ),
   );
   // @todo module_implements? How to create the admin page then?
   return $providers;
