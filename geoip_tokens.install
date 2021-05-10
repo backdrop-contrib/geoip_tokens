@@ -87,3 +87,19 @@ function geoip_tokens_uninstall() {
   state_del('geoip_tokens_request_token');
   state_del('geoip_tokens_request_token_refreshed');
 }
+
+/**
+ * Add more providers to config
+ */
+function geoip_tokens_update_1000() {
+  $new_providers = array(
+    'freegeoip.app' => 'freegeoip.app',
+    'freegeoip.live' => 'freegeoip.live',
+    'geoiplookup.io' => 'geoiplookup.io',
+  );
+  $config = config('geoip_tokens.settings');
+  $current_providers = $config->get('providers');
+  $current_providers += $new_providers;
+  $config->set('providers', $current_providers);
+  $config->save();
+}
