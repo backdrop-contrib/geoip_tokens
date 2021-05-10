@@ -8,7 +8,8 @@
  * To make use of Backdrop.geoipTokens.getData():
  *
  * Backdrop.geoipTokens.getData('latlon').success(function (data) {
- *   // Your callback here.
+ *   // Your callback here, for example:
+ *   $('.your-class input').val(data.latitude);
  * });
  *
  * Available types:
