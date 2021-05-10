@@ -34,7 +34,7 @@ countries or to display dates in the proper timezone.
 
 ### When _not_ to use this module
 
-This module has been written with low to medium traffic sites in mind. If your 
+This module has been written with low- to medium-traffic sites in mind. If your 
 site has really high traffic on pages that use the tokens, you might easily 
 burst the (generous) limits of the providers in use. Although this module tries 
 to distribute the load and to cache locally. "High traffic" means: thousands of
