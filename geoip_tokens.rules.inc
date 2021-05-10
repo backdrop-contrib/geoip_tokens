@@ -56,7 +56,7 @@ function _geoip_tokens_tokens_info() {
 function geoip_tokens_rules_condition_info() {
   return array(
     'geoip_tokens_rules_condition_country_compare' => array(
-      'label' => t('Check for user country detected by ip.'),
+      'label' => t('Check for user country detected by IP'),
       'parameter' => array(
         'Countries' => array(
           'label' => t('Country'),
@@ -65,7 +65,11 @@ function geoip_tokens_rules_condition_info() {
           'options list' => 'geoip_tokens_countries_list',
         ),
       ),
-      'group' => t('GeoIp Tokens'),
+      'group' => t('GeoIP Tokens'),
+    ),
+    'geoip_tokens_rules_condition_is_european_union' => array(
+      'label' => t('Check if detected country is in the European Union'),
+      'group' => t('GeoIP Tokens'),
     ),
   );
 }
@@ -88,9 +92,54 @@ function geoip_tokens_rules_condition_country_compare($countries) {
 }
 
 /**
+ * Checks if the detected country is a member of the European Union.
+ */
+function geoip_tokens_rules_condition_is_european_union() {
+  $current_country = geoip_tokens_get_geoip_info('country_code');
+  $members = geoip_tokens_eu_member_list();
+  return in_array($current_country['country_code'], $members);
+}
+
+/**
  * Helper function to provide an options list for rules UI.
  */
 function geoip_tokens_countries_list() {
   include_once BACKDROP_ROOT . '/core/includes/locale.inc';
   return country_get_list();
+}
+
+/**
+ * Helper function to provide a list of member countries.
+ */
+function geoip_tokens_eu_member_list() {
+  $member_countries = array(
+    'AT',
+    'BE',
+    'BG',
+    'CY',
+    'CZ',
+    'DE',
+    'DK',
+    'EE',
+    'ES',
+    'FI',
+    'FR',
+    'GR',
+    'HR',
+    'HU',
+    'IE',
+    'IT',
+    'LT',
+    'LU',
+    'LV',
+    'MT',
+    'NL',
+    'PL',
+    'PT',
+    'RO',
+    'SE',
+    'SI',
+    'SK',
+  );
+  return $member_countries;
 }
