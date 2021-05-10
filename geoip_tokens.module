@@ -119,7 +119,7 @@ function geoip_tokens_get_geoip_info($type = 'all') {
   static $result;
 
   if (empty($result)) {
-    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE)) {
+    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
       $cache_hit = db_query('SELECT * FROM {geoip_tokens_cache} WHERE anon_ip = :anon_ip', array(
         ':anon_ip' => $anon_ip,
       ))->fetchAssoc();
@@ -133,7 +133,8 @@ function geoip_tokens_get_geoip_info($type = 'all') {
       }
     }
     else {
-      // Private IP ranges are not valid for geoip, fallback to default values.
+      // Private and reserved IP ranges are not valid for geoip, fallback to
+      // default values.
       $result = _geoip_tokens_get_default_values($anon_ip, 'invalid_range');
     }
   }
