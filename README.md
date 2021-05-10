@@ -18,27 +18,13 @@ The services (see credits section below) get randomly queried, the results for
 the anonymized IPs get cached in a local database for a while, to prevent too
 many requests.
 
-### Precision of results
-
-The results are not as exact as, for instance, GPS. Geolocation based on IP
-addresses can only be approximate. The results may even be wrong for a
-while, until a service provider updates outdated information.
-
 ### Use cases
 
 Typical use-cases are sites that provide services that need some infos about
-the visitor's or user's position.
+the visitor's or user's geographical position.
 
 For example, to center a map, to redirect to specific pages for different 
 countries or to display dates in the proper timezone.
-
-### When _not_ to use this module
-
-This module has been written with low- to medium-traffic sites in mind. If your 
-site has really high traffic on pages that use the tokens, you might easily 
-burst the (generous) limits of the providers in use. Although this module tries 
-to distribute the load and to cache locally. "High traffic" means: thousands of
-requests per day.
 
 ### Rules support
 
@@ -47,6 +33,20 @@ Two conditions are available:
 
 - Compare the current IP with a configurable list of countries
 - Check if current IP is within the European Union
+
+### Precision of results
+
+The results are not as exact as, for instance, GPS. Geolocation based on IP
+addresses can only be approximate. The results may even be wrong for a
+while, until a service provider updates outdated information.
+
+### When _not_ to use this module
+
+This module has been written with low- to medium-traffic sites in mind. If your 
+site has really high traffic on pages that use the tokens, you might easily 
+burst the (generous) limits of the providers in use. Although this module tries 
+to distribute the load and to cache locally. "High traffic" means: thousands of
+requests per day.
 
 ### For developers
 
