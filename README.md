@@ -39,7 +39,8 @@ Two conditions are available:
 
 The results are not as exact as, for instance, GPS. Geolocation based on IP
 addresses can only be approximate. The results may even be wrong for a
-while, until a service provider updates outdated information.
+while, until a service provider updates outdated information. So don't blindly 
+rely on the results.
 
 ### When _not_ to use this module
 
