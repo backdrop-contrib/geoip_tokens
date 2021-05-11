@@ -15,7 +15,7 @@ To make use of this module, your Backdrop site must be able to do external
 requests - which is usually the case.
 
 The services (see credits section below) get randomly queried, the results for
-the anonymized IPs get cached in a local database for a while, to prevent too
+the anonymized IPs get cached in a local database for a while, to avoid too
 many requests.
 
 ### Use cases
@@ -23,8 +23,9 @@ many requests.
 Typical use-cases are sites that provide services that need some infos about
 the visitor's or user's geographical position.
 
-For example, to center a map, to redirect to specific pages for different 
-countries or to display dates in the proper timezone.
+For example, to center a map, to redirect to specific pages or forms for 
+different countries, to display messages with country specific info, or to 
+display dates in the proper timezone.
 
 ### Rules support
 
@@ -50,10 +51,10 @@ requests per day.
 
 ### For developers
 
-While tokens can be helpful, you might need something more special, like
-juggling with data via hook_form_alter().
+While tokens can be helpful, you might need something more specific, like
+juggling with GeoIP data via hook_form_alter().
 
-In this case use the function geoip_tokens_get_geoip_info() directly. Its
+In this case use the function `geoip_tokens_get_geoip_info()` directly. Its
 optional parameter can be one of:
 
 - all (the default)
@@ -64,7 +65,7 @@ optional parameter can be one of:
 You get a keyed array of values.
 
 If you need to get things working with cached pages and anonymous users, use the
-ajax API. See the example in js/geoip_tokens.js, note that the ajax
+Ajax API. See the example in js/geoip_tokens.js, note that the ajax
 parameters are slightly different.
 
 ```
