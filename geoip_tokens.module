@@ -116,9 +116,9 @@ function geoip_tokens_get_geoip_info($type = 'all') {
 
   // The external IP can never change within a request, but this function could
   // get triggered several times by different tokens. Re-use the result.
-  static $result;
+  static $geoip_tokens_result;
 
-  if (empty($result)) {
+  if (empty($geoip_tokens_result)) {
     if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
       $cache_hit = db_query('SELECT * FROM {geoip_tokens_cache} WHERE anon_ip = :anon_ip', array(
         ':anon_ip' => $anon_ip,
@@ -126,16 +126,16 @@ function geoip_tokens_get_geoip_info($type = 'all') {
 
       // If not found in local cache, do an external request.
       if (!$cache_hit) {
-        $result = geoip_tokens_retrieve_external($anon_ip);
+        $geoip_tokens_result = geoip_tokens_retrieve_external($anon_ip);
       }
       else {
-        $result = $cache_hit;
+        $geoip_tokens_result = $cache_hit;
       }
     }
     else {
       // Private and reserved IP ranges are not valid for geoip, fallback to
       // default values.
-      $result = _geoip_tokens_get_default_values($anon_ip, 'invalid_range');
+      $geoip_tokens_result = _geoip_tokens_get_default_values($anon_ip, 'invalid_range');
     }
   }
 
@@ -149,7 +149,7 @@ function geoip_tokens_get_geoip_info($type = 'all') {
   else {
     $keys = array('country_code', 'latitude', 'longitude', 'timezone');
   }
-  $filtered = array_filter($result, function ($key) use ($keys) {
+  $filtered = array_filter($geoip_tokens_result, function ($key) use ($keys) {
     return in_array($key, $keys);
   }, ARRAY_FILTER_USE_KEY);
 
