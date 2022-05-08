@@ -295,15 +295,6 @@ function geoip_tokens_providers() {
         'timezone' => 'timezone',
       ),
     ),
-    'freegeoip.app' => array(
-      'urlpattern' => 'https://freegeoip.app/json/__IP__',
-      'field_names' => array(
-        'country_code' => 'country_code',
-        'latitude' => 'latitude',
-        'longitude' => 'longitude',
-        'timezone' => 'time_zone',
-      ),
-    ),
     'freegeoip.live' => array(
       'urlpattern' => 'https://freegeoip.live/json/__IP__',
       'field_names' => array(

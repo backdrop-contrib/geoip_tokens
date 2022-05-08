@@ -106,7 +106,6 @@ External services in use:
 - https://ipapi.co/
 - https://reallyfreegeoip.org/
 - https://www.geojs.io/
-- https://freegeoip.app/
 - https://freegeoip.live/
 - https://geoiplookup.io/
 

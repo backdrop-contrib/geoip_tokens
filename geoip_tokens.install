@@ -103,3 +103,14 @@ function geoip_tokens_update_1000() {
   $config->set('providers', $current_providers);
   $config->save();
 }
+
+/**
+ * Remove closed down freegeoip.app service.
+ */
+function geoip_tokens_update_1001() {
+  $config = config('geoip_tokens.settings');
+  $current_providers = $config->get('providers');
+  unset($current_providers['freegeoip.app']);
+  $config->set('providers', $current_providers);
+  $config->save();
+}
