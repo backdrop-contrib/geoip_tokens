@@ -70,7 +70,7 @@ Ajax API. See the example in js/geoip_tokens.js, note that the ajax
 parameters are slightly different.
 
 ```
-Backdrop.geoipTokens.getData('ccode').success(function (data) {
+Backdrop.geoipTokens.getData('ccode').done(function (data) {
   // Your callback here.
   // "data" contains the values you requested.
 });
