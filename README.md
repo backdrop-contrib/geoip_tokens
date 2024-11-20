@@ -106,8 +106,8 @@ External services in use:
 - https://ipapi.co/
 - https://reallyfreegeoip.org/
 - https://www.geojs.io/
-- https://freegeoip.live/
-- https://geoiplookup.io/
+- https://geoip.cdnservice.eu/
+- https://ipwhois.io/
 
 
 ## License
