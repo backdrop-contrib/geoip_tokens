@@ -77,7 +77,7 @@ function geoip_tokens_rules_condition_info() {
 /**
  * Checks if the detected country matches to one in the list.
  *
- * @param array $countries
+ * @param array|string $countries
  *   List of countries to check against.
  *
  * @return bool

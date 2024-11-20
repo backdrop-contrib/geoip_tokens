@@ -41,6 +41,7 @@ function geoip_tokens_deliver_ajax() {
   }
 
   $args = arg();
+  $result = NULL;
   if (count($args) == 3) {
     switch ($args[2]) {
       case 'latlon':
@@ -245,6 +246,7 @@ function geoip_tokens_retrieve_external($ip) {
  * Helper function to flatten data arrays.
  *
  * @param array $remote_data
+ *   Array of data retrieved from remote service.
  *
  * @return array
  */
