@@ -216,6 +216,7 @@ function geoip_tokens_retrieve_external($ip) {
   // @todo What about 301/302?
   elseif ($response_code == '200' && isset($response->data)) {
     $remote_data = json_decode($response->data, TRUE);
+    $remote_data = _geoip_tokens_flat_array($remote_data);
 
     // Field name replacements according to provider definition.
     $field_defs = $providers[$current_provider]['field_names'];
@@ -238,6 +239,28 @@ function geoip_tokens_retrieve_external($ip) {
   }
 
   return $data;
+}
+
+/**
+ * Helper function to flatten data arrays.
+ *
+ * @param array $remote_data
+ *
+ * @return array
+ */
+function _geoip_tokens_flat_array(array $remote_data) {
+  $flat = array();
+  foreach ($remote_data as $key => $value) {
+    if (is_array($value)) {
+      foreach ($value as $inner_key => $inner_value) {
+        $flat[$inner_key] = $inner_value;
+      }
+    }
+    else {
+      $flat[$key] = $value;
+    }
+  }
+  return $flat;
 }
 
 /**
@@ -295,22 +318,22 @@ function geoip_tokens_providers() {
         'timezone' => 'timezone',
       ),
     ),
-    'freegeoip.live' => array(
-      'urlpattern' => 'https://freegeoip.live/json/__IP__',
+    'geoip.cdnservice.eu' => array(
+      'urlpattern' => 'https://geoip.cdnservice.eu/api/__IP__',
       'field_names' => array(
-        'country_code' => 'country_code',
+        'country_code' => 'code',
         'latitude' => 'latitude',
         'longitude' => 'longitude',
         'timezone' => 'time_zone',
       ),
     ),
-    'geoiplookup.io' => array(
-      'urlpattern' => 'https://json.geoiplookup.io/__IP__',
+    'ipwhois.io' => array(
+      'urlpattern' => 'https://ipwho.is/__IP__?fields=country_code,latitude,longitude,timezone.id',
       'field_names' => array(
         'country_code' => 'country_code',
         'latitude' => 'latitude',
         'longitude' => 'longitude',
-        'timezone' => 'timezone_name',
+        'timezone' => 'id',
       ),
     ),
   );

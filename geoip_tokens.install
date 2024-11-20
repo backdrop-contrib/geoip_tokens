@@ -114,3 +114,27 @@ function geoip_tokens_update_1001() {
   $config->set('providers', $current_providers);
   $config->save();
 }
+
+/**
+ * Replace closed down or broken services.
+ */
+function geoip_tokens_update_1002() {
+  $old = array(
+    'freegeoip.live',
+    'geoiplookup.io',
+  );
+  $new = array(
+    'geoip.cdnservice.eu',
+    'ipwhois.io',
+  );
+  $config = config('geoip_tokens.settings');
+  $current_providers = $config->get('providers');
+  foreach ($old as $provider) {
+    unset($current_providers[$provider]);
+  }
+  foreach ($new as $provider) {
+    $current_providers[$provider] = $provider;
+  }
+  $config->set('providers', $current_providers);
+  $config->save();
+}
